@@ -17,9 +17,9 @@ psql --version 2>/dev/null | bash script/extract_version.bash | bash script/chec
 }
 
 # required by pg gem
-cmd="sudo apt-get install libpq-dev"
-echo "$ $cmd"
-$cmd || exit 1
+#cmd="sudo apt-get install libpq-dev"
+#echo "$ $cmd"
+#$cmd || exit 1
 
 # setup user if required
 psql -U$DATABASE_USERNAME postgres -c '' &> /dev/null || {

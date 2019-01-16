@@ -24,7 +24,7 @@ new_debootstrap=false
 
 if [[ "$ISOLATE_ROOT" != "/" ]] && [[ ! -d "$ISOLATE_ROOT" ]]; then
   new_debootstrap=true
-  apt-get install debootstrap
+  #apt-get install debootstrap
 
   mkdir "$ISOLATE_ROOT" -p
 
@@ -32,19 +32,19 @@ if [[ "$ISOLATE_ROOT" != "/" ]] && [[ ! -d "$ISOLATE_ROOT" ]]; then
   debootstrap $SUITE "$ISOLATE_ROOT" http://archive.ubuntu.com/ubuntu
 
   # add sources
-  echo deb http://archive.ubuntu.com/ubuntu/ $SUITE-updates main restricted >> /srv/chroot/nztrain/etc/apt/sources.list
-  echo deb http://archive.ubuntu.com/ubuntu/ $SUITE universe >> /srv/chroot/nztrain/etc/apt/sources.list
-  echo deb http://security.ubuntu.com/ubuntu $SUITE-security main restricted >> /srv/chroot/nztrain/etc/apt/sources.list
-  echo deb http://nz.archive.ubuntu.com/ubuntu/ $SUITE multiverse >> /srv/chroot/nztrain/etc/apt/sources.list
-  echo deb-src http://nz.archive.ubuntu.com/ubuntu/ $SUITE multiverse >> /srv/chroot/nztrain/etc/apt/sources.list
-  echo deb http://nz.archive.ubuntu.com/ubuntu/ $SUITE-updates multiverse >> /srv/chroot/nztrain/etc/apt/sources.list
+  echo deb http://archive.ubuntu.com/ubuntu/ $SUITE-updates main restricted >> "$ISOLATE_ROOT"/etc/apt/sources.list
+  echo deb http://archive.ubuntu.com/ubuntu/ $SUITE universe >> "$ISOLATE_ROOT"/etc/apt/sources.list
+  echo deb http://security.ubuntu.com/ubuntu $SUITE-security main restricted >> "$ISOLATE_ROOT"/etc/apt/sources.list
+  echo deb http://nz.archive.ubuntu.com/ubuntu/ $SUITE multiverse >> "$ISOLATE_ROOT"/etc/apt/sources.list
+  echo deb-src http://nz.archive.ubuntu.com/ubuntu/ $SUITE multiverse >> "$ISOLATE_ROOT"/etc/apt/sources.list
+  echo deb http://nz.archive.ubuntu.com/ubuntu/ $SUITE-updates multiverse >> "$ISOLATE_ROOT"/etc/apt/sources.list
 
   # link /etc/resolv.conf
   ln --force /etc/resolv.conf "$ISOLATE_ROOT/etc/resolv.conf"
 fi
 
 if ${update:=true} || ${new_debootstrap:=true} ; then
-  chroot "$ISOLATE_ROOT" apt-get update
+  chroot "$ISOLATE_ROOT" /bin/su root -l -c 'apt-get update'
 fi
 
 chroot_cmd="$ chroot \"$ISOLATE_ROOT\""
@@ -55,52 +55,52 @@ mount -o bind /proc "$ISOLATE_ROOT/proc"
 [ -z "$TRAVIS" ] && { # if not in Travis-CI
   # python ppa
   echo "$chroot_cmd add-apt-repository ppa:fkrull/deadsnakes -y"
-  chroot "$ISOLATE_ROOT" add-apt-repository ppa:fkrull/deadsnakes -y
+  chroot "$ISOLATE_ROOT" /bin/su root -l -c 'add-apt-repository ppa:fkrull/deadsnakes -y'
 
   # ruby ppa
   echo "$chroot_cmd add-apt-repository ppa:brightbox/ruby-ng -y"
-  chroot "$ISOLATE_ROOT" add-apt-repository ppa:brightbox/ruby-ng -y
+  chroot "$ISOLATE_ROOT" /bin/su root -l -c 'add-apt-repository ppa:brightbox/ruby-ng -y'
 }
 
 echo "$chroot_cmd apt-get update"
-chroot "$ISOLATE_ROOT" apt-get update
+chroot "$ISOLATE_ROOT" /bin/su root -l -c 'apt-get update'
 
 # utilities
 echo "$chroot_install wget"
-chroot "$ISOLATE_ROOT" apt-get install wget
+chroot "$ISOLATE_ROOT" /bin/su root -l -c 'apt-get install wget'
 
 # end utilities
 
 echo "$chroot_install software-properties-common"
-chroot "$ISOLATE_ROOT" apt-get install software-properties-common # provides add-apt-repository
+chroot "$ISOLATE_ROOT" /bin/su root -l -c 'apt-get install software-properties-common # provides add-apt-repository'
 
 # only for <= 12.04
 echo "$chroot_install python-software-properties"
-chroot "$ISOLATE_ROOT" apt-get install python-software-properties # provides add-apt-repository
+chroot "$ISOLATE_ROOT" /bin/su root -l -c 'apt-get install python-software-properties # provides add-apt-repository'
 
 echo "$chroot_install build-essential"
-chroot "$ISOLATE_ROOT" apt-get install build-essential # C/C++ (g++, gcc)
+chroot "$ISOLATE_ROOT" /bin/su root -l -c 'apt-get install build-essential # C/C++ (g++, gcc)'
 
 echo "$chroot_install ruby"
-chroot "$ISOLATE_ROOT" apt-get install ruby # Ruby (ruby)
+chroot "$ISOLATE_ROOT" /bin/su root -l -c 'apt-get install ruby # Ruby (ruby)'
 
 echo "$chroot_install ghc"
-chroot "$ISOLATE_ROOT" apt-get install ghc # Haskell (ghc)
+chroot "$ISOLATE_ROOT" /bin/su root -l -c 'apt-get install ghc # Haskell (ghc)'
 
 echo "$chroot_install default-jdk"
-chroot "$ISOLATE_ROOT" apt-get install default-jdk # Java
+chroot "$ISOLATE_ROOT" /bin/su root -l -c 'apt-get install default-jdk # Java'
 
 [ -z "$TRAVIS" ] && { # if not in Travis-CI
 
   echo "$chroot_install python3.4"
-  chroot "$ISOLATE_ROOT" apt-get install python3.4 # Python 3.4
+  chroot "$ISOLATE_ROOT" /bin/su root -l -c 'apt-get install python3.4 # Python 3.4'
 
   echo "$chroot_install ruby2.2"
-  chroot "$ISOLATE_ROOT" apt-get install ruby2.2
+  chroot "$ISOLATE_ROOT" /bin/su root -l -c 'apt-get install ruby2.2'
 
 
   ## INSTALL J
-  chroot "$ISOLATE_ROOT" mkdir /home/j -p
+  chroot "$ISOLATE_ROOT" /bin/su root -l -c 'mkdir /home/j -p'
   J_TAG="J803"
   J_DEB="j803_amd64.deb"
   J_SAVE="/home/j/$J_DEB"
@@ -110,7 +110,7 @@ chroot "$ISOLATE_ROOT" apt-get install default-jdk # Java
   }
 
   echo "$chroot_cmd dpkg -i $J_SAVE"
-  chroot "$ISOLATE_ROOT" dpkg -i "$J_SAVE"
+  chroot "$ISOLATE_ROOT" /bin/su root -l -c 'dpkg -i "$J_SAVE"'
 
   cat << EOF > "$ISOLATE_ROOT"/home/j/install.ijs
 load 'pacman'
@@ -123,7 +123,7 @@ exit 0
 EOF
 
   echo "$chroot_cmd ijconsole /home/j/install.ijs"
-  chroot "$ISOLATE_ROOT" ijconsole /home/j/install.ijs
+  chroot "$ISOLATE_ROOT" /bin/su root -l -c 'ijconsole /home/j/install.ijs'
   ## END INSTALL J
 
 }
@@ -142,22 +142,22 @@ fi
 
 # gcc 4.9.3 on Precise (will not be needed when we use trusty tahr)
 echo "$chroot_cmd add-apt-repository ppa:ubuntu-toolchain-r/test -y"
-chroot "$ISOLATE_ROOT" add-apt-repository ppa:ubuntu-toolchain-r/test -y
+chroot "$ISOLATE_ROOT" /bin/su root -l -c 'add-apt-repository ppa:ubuntu-toolchain-r/test -y'
 
 echo "$chroot_cmd apt-get update"
-chroot "$ISOLATE_ROOT" apt-get update
+chroot "$ISOLATE_ROOT" /bin/su root -l -c 'apt-get update'
 
 echo "$chroot_cmd apt-get install gcc-4.9"
-chroot "$ISOLATE_ROOT" apt-get install gcc-4.9
+chroot "$ISOLATE_ROOT" /bin/su root -l -c 'apt-get install gcc-4.9'
 
 echo "$chroot_cmd apt-get install g++-4.9"
-chroot "$ISOLATE_ROOT" apt-get install g++-4.9
+chroot "$ISOLATE_ROOT" /bin/su root -l -c 'apt-get install g++-4.9'
 
 echo "$chroot_cmd update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 75"
-chroot "$ISOLATE_ROOT" update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 75
+chroot "$ISOLATE_ROOT" /bin/su root -l -c 'update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 75'
 
 echo "$chroot_cmd update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 75"
-chroot "$ISOLATE_ROOT" update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 75
+chroot "$ISOLATE_ROOT" /bin/su root -l -c 'update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 75'
 # gcc 4.9.3 done
 
 # let user know that chroot installs are finished

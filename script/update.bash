@@ -32,7 +32,7 @@ if ${gitpull:=true} ; then
   bash script/install/pull.bash
 fi
 
-bash script/install/bundle.bash # bundle install gems
+# bash script/install/bundle.bash # bundle install gems
 
 bash script/install/nztrain.bash # fix files & directory structure
 
